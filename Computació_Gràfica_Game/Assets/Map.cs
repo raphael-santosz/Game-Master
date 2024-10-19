@@ -1,11 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 
 public class Map : MonoBehaviour
 {
-    public GameObject solidSquare;
-    public GameObject foodItem;
+    public Tilemap tilemap; // Referência ao Tilemap para os blocos sólidos
+    public TileBase solidTile; // Tile para o bloco sólido
+    public GameObject foodItem; // Objeto de comida (agora um GameObject)
 
     public int ROWS = 10; // Número de linhas no mapa
     public int COLS = 23; // Número de colunas no mapa
@@ -17,16 +19,6 @@ public class Map : MonoBehaviour
     void Start()
     {
         CreateMap();
-
-        // Mover os objetos originais para fora da área visível
-        MoveOutOfView(solidSquare);
-        MoveOutOfView(foodItem);
-    }
-
-    void MoveOutOfView(GameObject obj)
-    {
-        // Movendo os objetos originais para fora da área visível
-        obj.transform.position = new Vector3(-1000, -1000, 0);
     }
 
     void CreateMap()
@@ -47,6 +39,9 @@ public class Map : MonoBehaviour
 
     void DestroyMap()
     {
+        tilemap.ClearAllTiles(); // Limpa todos os tiles do Tilemap
+
+        // Destrói os GameObjects instanciados (como os objetos de comida)
         Transform[] ts = gameObject.GetComponentsInChildren<Transform>();
         foreach (Transform t in ts)
         {
@@ -63,16 +58,10 @@ public class Map : MonoBehaviour
             for (int j = 1; j < (COLS - 1); j++)
                 squares[i, j] = 0;
 
-        // Definir as bordas do mapa como sólidas
-        for (int i = 0; i < ROWS; i++)
-        {
-            squares[i, 0] = 1;
-            squares[i, COLS - 1] = 1;
-        }
-
+        // Mantém apenas o topo do mapa sólido (opcional)
         for (int j = 1; j < (COLS - 1); j++)
         {
-            squares[0, j] = 1;
+            squares[0, j] = 1; // Mantém o topo como sólido
         }
     }
 
@@ -140,10 +129,13 @@ public class Map : MonoBehaviour
 
     void DrawMap()
     {
+        tilemap.ClearAllTiles(); // Limpa o tilemap antes de desenhar novamente
+
         GameObject obj;
 
-        float xOffset = COLS / 2.0f - 0.5f;
-        float yOffset = ROWS / 2.0f - 0.5f;
+        // Obter o tamanho do tile no Tilemap para usar como base para a altura do foodItem
+        float tileHeight = tilemap.cellSize.y; // Tamanho da célula (altura) do tile no Tilemap
+        float tileWidth = tilemap.cellSize.x;  // Tamanho da célula (largura) do tile no Tilemap
 
         // Desenhar o mapa visualmente, criando blocos para cada célula "sólida"
         for (int i = 0; i < ROWS; i++)
@@ -152,17 +144,30 @@ public class Map : MonoBehaviour
             {
                 if (squares[i, j] == 1) // Se o bloco for sólido (1)
                 {
-                    obj = Instantiate(solidSquare) as GameObject;
-                    obj.transform.position = new Vector3(j - xOffset, i - yOffset, 0.0f);
-                    obj.transform.parent = this.gameObject.transform;
+                    tilemap.SetTile(new Vector3Int(j, i, 0), solidTile); // Definir o tile sólido
                 }
-                else if (squares[i, j] == 0 && i > 0 && squares[i - 1, j] == 1) // Se for caminhável e houver um bloco abaixo
+                else if (squares[i, j] == 0 && i > 0 && squares[i - 1, j] == 1) // Se for caminhável e houver um bloco sólido abaixo
                 {
-                    obj = Instantiate(foodItem) as GameObject; // Instanciar comida
-                    obj.transform.position = new Vector3(j - xOffset, i - yOffset, -1f);
+                    // Instanciar o foodItem diretamente acima do bloco sólido
+                    obj = Instantiate(foodItem) as GameObject;
+                    
+                    // Ajustar a posição para alinhar o foodItem logo acima da plataforma e levemente à direita
+                    obj.transform.position = new Vector3(j * tileWidth + 0.45f, i * tileHeight + 0.4f, 0f); // Ajuste de X e Y
+                    
                     obj.transform.parent = this.gameObject.transform;
                 }
             }
         }
     }
+
+
+
+
+
+
+
+
+
+
+
 }
