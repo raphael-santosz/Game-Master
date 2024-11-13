@@ -5,48 +5,82 @@ using UnityEngine;
 
 public class Character : MonoBehaviour
 {
-    public float Speed;
-    public float Jumpforce;
+ 
+    public Rigidbody2D rigidbody2D;
+    public float velocidadMovimento;
+    public SpriteRenderer spriteRenderer;
 
-    public bool isJumping;
-    private Rigidbody2D rig;
+    public float forcaPulo;
+
+    public Transform detectorChao;
+    public float raioDeteccao;
+
+    public LayerMask layerChao;
+
+    public bool pulando;
+    public bool estaNoChao;
     // Start is called before the first frame update
     void Start()
     {
-        rig = GetComponent<Rigidbody2D>();
+       
     }
 
     // Update is called once per frame
     void Update()
     {
-        Move();
-        Jump();
+      Move();
+      Jump();
     }
 
-    void Move ()
-    {
-        Vector3 movement = new Vector3(Input.GetAxis("Horizontal"), 0f, 0f);
-        transform.position += movement * Time.deltaTime * Speed;
+    private void Move(){
+        float horizontal = Input.GetAxis("Horizontal");
+        Vector2 velocidade = this.rigidbody2D.velocity;
+        velocidade.x = horizontal * this.velocidadMovimento;
+        this.rigidbody2D.velocity = velocidade;
 
-        float inputAxis = Input.GetAxis("Horizontal");
-
-        if(inputAxis > 0){
-
-            transform.eulerAngles = new Vector2(0f, 0f);
-
+        if (velocidade.x > 0){
+            this.spriteRenderer.flipX = false;
+        }else if (velocidade.x < 0){
+            this.spriteRenderer.flipX = true;
         }
-        if(inputAxis < 0){
-
-            transform.eulerAngles = new Vector2(0f, 180f);
+    }
+    
+    private void Jump(){
+        Collider2D collider = Physics2D.OverlapCircle(this.detectorChao.position, this.raioDeteccao, this.layerChao);
+        if (collider != null){
+            this.estaNoChao = true;
+            this.pulando = false;
+            }else{
+                this.estaNoChao = false;
+            }
+        
+        if (this.estaNoChao){
+            if (Input.GetKeyDown(KeyCode.W ) || Input.GetKeyDown(KeyCode.UpArrow)){
+                if(!this.pulando){
+                    AplicarForcaPulo();
+                }    
+            
+            
+            }
             
         }
+           
     }
 
-    void Jump()
-    {
-        if(Input.GetButtonDown("Jump") && !isJumping)
-        {
-            rig.AddForce(new Vector2(0f, Jumpforce), ForceMode2D.Impulse);
+    private void AplicarForcaPulo(){
+        Vector2 forca = new Vector2(0, this.forcaPulo);
+        this.rigidbody2D.AddForce(forca, ForceMode2D.Impulse); 
+
+    }
+    public bool EstaNoChao{
+        get {
+            return this.estaNoChao;
         }
     }
+
+    private void OnDrawGizmos(){
+        Gizmos.DrawWireSphere(this.detectorChao.position, this.raioDeteccao);
+
+    }
+    
 }

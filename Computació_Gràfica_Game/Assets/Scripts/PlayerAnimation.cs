@@ -16,10 +16,24 @@ public class PlayerAnimation : MonoBehaviour
     void Update()
     {
         float velocidadeX = Mathf.Abs(this.rigidbody.velocity.x);
-        if(velocidadeX > 0){
-            this.animator.SetBool("run",true);
-        } else{
-            this.animator.SetBool("run",false);
+        if(this.player.EstaNoChao){ //está no chão
+            if(velocidadeX > 0){
+                this.animator.SetBool("run",true);
+            } else{
+                this.animator.SetBool("run",false);
+            }
+            this.animator.SetBool("fall",false);
+            this.animator.SetBool("jump",false);
+        }else{ // não está no chão
+            float velocidadeY = this.rigidbody.velocity.y;
+            if (velocidadeY > 0){ //pulando
+                this.animator.SetBool("jump",true);
+                this.animator.SetBool("fall",false);
+            }else if(velocidadeY < 0){//caindo
+                this.animator.SetBool("jump",false);
+                this.animator.SetBool("fall",true);
+            }
         }
+        
     }
 }
