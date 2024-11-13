@@ -9,10 +9,10 @@ public class Map : MonoBehaviour
     public TileBase solidTile; // Tile para o bloco sólido
     public GameObject foodItem; // Objeto de comida (agora um GameObject)
 
-    public int ROWS = 12; // Número de linhas no mapa
-    public int COLS = 28; // Número de colunas no mapa
+    public int ROWS = 19; // Número de linhas no mapa original
+    public int COLS = 23; // Número de colunas no mapa
     public int platformGap = 2; // Distância mínima entre plataformas na mesma linha
-    public int lineGap = 1; // Espaço fixo de 2 linhas de distância
+    public int lineGap = 2; // Espaço fixo de 2 linhas de distância
 
     int[,] squares;
 
@@ -52,24 +52,54 @@ public class Map : MonoBehaviour
 
     void InitMap()
     {
+        // Cria um array bidimensional `squares` com o novo total de linhas `ROWS` e colunas `COLS`.
         squares = new int[ROWS, COLS];
 
-        for (int i = 1; i < (ROWS - 1); i++)
-            for (int j = 1; j < (COLS - 1); j++)
-                squares[i, j] = 0;
-
-        // Mantém apenas o topo do mapa sólido (opcional)
-        for (int j = 1; j < (COLS - 1); j++)
+        // Configura a base original do mapa como sólida, ou seja, a linha mais baixa.
+        for (int j = 1; j < COLS - 1; j++)
         {
-            squares[0, j] = 1; // Mantém o topo como sólido
+            squares[0, j] = 1; // Linha mais baixa como sólida (base)
+        }
+
+        // Adiciona 4 linhas sólidas logo acima da base, começando da linha 1 até a linha 4
+        for (int i = 1; i < 5 && i < ROWS; i++) // Configura apenas 4 linhas sólidas
+        {
+            for (int j = 0; j < COLS; j++)
+            {
+                squares[i, j] = 1; // Define blocos como sólidos nas 4 linhas acima da base
+            }
+        }
+
+        // Configura as células restantes acima das 4 linhas sólidas como vazias
+        for (int i = 5; i < ROWS - 1; i++) // Limita até ROWS - 1 para não ultrapassar o limite
+        {
+            for (int j = 1; j < COLS - 1; j++)
+            {
+                squares[i, j] = 0; // Blocos vazios nas linhas acima das 4 sólidas
+            }
+        }
+
+        // Configura a linha superior do mapa como sólida (opcional)
+        if (ROWS > 1) // Certifica-se de que haja pelo menos uma linha para configurar o topo
+        {
+            for (int j = 1; j < COLS - 1; j++)
+            {
+                squares[ROWS - 1, j] = 1; // Linha superior sólida
+            }
         }
     }
 
     void BuildRandomMap()
     {
-        // Pular sempre 2 linhas para garantir o espaçamento vertical fixo
+        // Pular sempre `lineGap` linhas para garantir o espaçamento vertical fixo
         for (int row = 2; row < ROWS - 1; row += lineGap) 
         {
+            // Se esta for a última iteração, adiciona um gap extra
+            if (row + lineGap >= ROWS - 1) // Verifica se esta é a última linha antes de ROWS - 1
+            {
+                row += lineGap; // Adiciona um lineGap extra
+            }
+
             int maxPlatforms = CalculateMaxPlatformsPerRow(row);  
             List<int> usedCols = new List<int>(); // Para acompanhar as colunas já ocupadas
 
@@ -110,7 +140,10 @@ public class Map : MonoBehaviour
         // Verifica se as colunas necessárias para a plataforma estão livres, incluindo o espaço de gap
         for (int col = startCol; col < startCol + platformLength + platformGap; col++)
         {
-            if (usedCols.Contains(col)) return false; // Espaço já ocupado
+            if (usedCols.Contains(col))
+            {
+                return false; // Espaço já ocupado
+            }
         }
         return true; // Espaço disponível
     }
@@ -138,7 +171,7 @@ public class Map : MonoBehaviour
         float tileWidth = tilemap.cellSize.x;  // Tamanho da célula (largura) do tile no Tilemap
 
         // Desenhar o mapa visualmente, criando blocos para cada célula "sólida"
-        for (int i = 0; i < ROWS; i++)
+        for (int i = 0; i < ROWS; i++) // Corrigido para ROWS em vez de ROWS + 10
         {
             for (int j = 0; j < COLS; j++)
             {
@@ -153,21 +186,10 @@ public class Map : MonoBehaviour
                     
                     // Ajustar a posição para alinhar o foodItem logo acima da plataforma e levemente à direita
                     obj.transform.position = new Vector3(j * tileWidth + 0.45f, i * tileHeight + 0.2f, 0f); // Ajuste de X e Y
-                    
+                   
                     obj.transform.parent = this.gameObject.transform;
                 }
             }
         }
     }
-
-
-
-
-
-
-
-
-
-
-
 }
