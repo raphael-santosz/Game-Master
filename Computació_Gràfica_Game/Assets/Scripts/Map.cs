@@ -9,10 +9,10 @@ public class Map : MonoBehaviour
     public TileBase solidTile; // Tile para o bloco sólido
     public GameObject foodItem; // Objeto de comida (agora um GameObject)
 
-    public int ROWS = 10; // Número de linhas no mapa
-    public int COLS = 23; // Número de colunas no mapa
+    public int ROWS = 12; // Número de linhas no mapa
+    public int COLS = 28; // Número de colunas no mapa
     public int platformGap = 2; // Distância mínima entre plataformas na mesma linha
-    public int lineGap = 2; // Espaço fixo de 2 linhas de distância
+    public int lineGap = 1; // Espaço fixo de 2 linhas de distância
 
     int[,] squares;
 
@@ -68,7 +68,7 @@ public class Map : MonoBehaviour
     void BuildRandomMap()
     {
         // Pular sempre 2 linhas para garantir o espaçamento vertical fixo
-        for (int row = 2; row < ROWS - 1; row += lineGap + 1) 
+        for (int row = 2; row < ROWS - 1; row += lineGap) 
         {
             int maxPlatforms = CalculateMaxPlatformsPerRow(row);  
             List<int> usedCols = new List<int>(); // Para acompanhar as colunas já ocupadas
@@ -124,7 +124,7 @@ public class Map : MonoBehaviour
     int CalculateMaxPlatformsPerRow(int row)
     {
         // Garante que serão geradas entre 2 e 4 plataformas por linha
-        return Random.Range(2, 4); 
+        return Random.Range(3, 5); 
     }
 
     void DrawMap()
@@ -152,7 +152,7 @@ public class Map : MonoBehaviour
                     obj = Instantiate(foodItem) as GameObject;
                     
                     // Ajustar a posição para alinhar o foodItem logo acima da plataforma e levemente à direita
-                    obj.transform.position = new Vector3(j * tileWidth + 0.45f, i * tileHeight + 0.4f, 0f); // Ajuste de X e Y
+                    obj.transform.position = new Vector3(j * tileWidth + 0.45f, i * tileHeight + 0.2f, 0f); // Ajuste de X e Y
                     
                     obj.transform.parent = this.gameObject.transform;
                 }
