@@ -19,6 +19,8 @@ public class Character : MonoBehaviour
 
     public bool pulando;
     public bool estaNoChao;
+
+    public int foods;
     // Start is called before the first frame update
     void Start()
     {
@@ -55,7 +57,7 @@ public class Character : MonoBehaviour
             }
         
         if (this.estaNoChao){
-            if (Input.GetKeyDown(KeyCode.W ) || Input.GetKeyDown(KeyCode.UpArrow)){
+            if (Input.GetKeyDown(KeyCode.Space)){
                 if(!this.pulando){
                     AplicarForcaPulo();
                 }    
@@ -83,4 +85,16 @@ public class Character : MonoBehaviour
 
     }
     
+    private void OnTriggerEnter2D(Collider2D collision){
+
+        if(collision.gameObject.tag == "food"){
+            Destroy(collision.gameObject);
+            foods++;
+        }
+    }
+     
+     public void ResetFoods()
+    {
+        foods = 0;
+    }
 }
